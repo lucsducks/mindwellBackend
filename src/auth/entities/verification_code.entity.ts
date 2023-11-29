@@ -19,12 +19,15 @@ export class VerificationCode {
 
     @CreateDateColumn()
     createdAt: Date;
-
+    @Column({ type: 'int', default: 0 })
+    emailSendCount: number;
     @BeforeInsert()
     setExpiration() {
         const expirationTime = new Date();
         expirationTime.setMinutes(expirationTime.getMinutes() + 5);
         this.expiration = expirationTime;
+        this.emailSendCount = 1;
+
     }
 
     @Column({ type: 'timestamp' })

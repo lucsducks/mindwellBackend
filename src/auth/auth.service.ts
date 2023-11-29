@@ -15,6 +15,7 @@ import transporter from './helpers/mailer.helpers';
 import { VerifyUserDto } from './dto/verify-user.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ResendUserDto } from './dto/resend-user.dto';
+import { PrivilegyUserDto } from './dto/privilegy-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -32,7 +33,10 @@ export class AuthService {
       const { password, ...data } = createUserDto;
       const user = this.userRepository.create({ ...data, password: bcrypt.hashSync(password, 10) });
       await this.userRepository.save(user);
-      const verificationCodeNumber = Math.floor(100000 + Math.random() * 900000);
+      let verificationCodeNumber: number;
+      do {
+        verificationCodeNumber = Math.floor(100000 + Math.random() * 900000);
+      } while (verificationCodeNumber < 100000);
       const verificationCode = verificationCodeNumber.toString();
       const codeEntity = this.verificationcodeRepository.create({
         email: createUserDto.email,
@@ -40,7 +44,7 @@ export class AuthService {
       });
       await this.verificationcodeRepository.save(codeEntity);
       let mailOptions = {
-        from: 'alpaquitay@company.com',
+        from: 'mindwell@company.com',
         to: createUserDto.email,
         subject: 'Código de Verificación',
         text: `Tu código de verificación es: ${verificationCode}`
@@ -57,8 +61,11 @@ export class AuthService {
   async login(loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
     const user = await this.userRepository.findOne({ where: { email }, select: { email: true, password: true, id: true, name: true, lastname: true, roles: true, verify: true, isActive: true } });
-    if (!user) throw new UnauthorizedException('Credentials not valid');
-    if (!bcrypt.compareSync(password, user.password)) throw new UnauthorizedException('Credentials not valid');
+    if (!user) throw new BadRequestException('Email no registrado');
+    if (!user.isActive) throw new BadRequestException('Usuario desactivado, hablar con su docente o administrador');
+    if (!bcrypt.compareSync(password, user.password)) throw new UnauthorizedException('Credenciales no validos');
+    if (!user.verify) throw new UnauthorizedException('Usuario no verificado');
+
     return { ...user, token: this.getJwtToken({ email: user.email, id: user.id }) };
   }
   async checkAuthStatus(user: User) {
@@ -70,7 +77,7 @@ export class AuthService {
   async findAll(paginationDto: PaginationDto) {
 
     const { limit = 10, offset = 0 } = paginationDto;
-    const users = await this.userRepository.find({ take: limit, skip: offset });
+    const users = await this.userRepository.find({ skip: offset });
     return users;
 
   }
@@ -85,10 +92,10 @@ export class AuthService {
 
   async findAllPacientes(paginationDto: PaginationDto) {
 
-  const { limit = 10, offset = 0 } = paginationDto;
+    const { limit = 10, offset = 0 } = paginationDto;
     const users = await this.userRepository.createQueryBuilder("user")
-        .where("user.roles = :roles", { roles: ['user'] })
-        .getMany();
+      .where("user.roles = :roles", { roles: ['user'] })
+      .getMany();
 
     return users;
 
@@ -101,43 +108,54 @@ export class AuthService {
       const queryBuild = this.userRepository.createQueryBuilder();
       user = await queryBuild.where('UPPER(email) =:email or fullname=:fullname', { email: term.toUpperCase(), fullname: term.toLowerCase() }).getOne();
     }
-    if (!user) throw new BadRequestException('User not found');
+    if (!user) throw new BadRequestException('Usuario no encontrado');
 
     return user;
   }
   async verify(verifyUserDto: VerifyUserDto) {
     const { email, code } = verifyUserDto;
-    try {
-      const codeStatus = await this.verificationcodeRepository.findOne({ where: { email, code } });
-      if (!codeStatus) throw new BadRequestException('Code incorrect');
-      const user = await this.userRepository.findOne({ where: { email } });
-      user.verify = true;
-      await this.userRepository.save(user);
-      await this.verificationcodeRepository.delete(codeStatus.id);
-      return { ...user, token: this.getJwtToken({ email: user.email, id: user.id }) };
-    } catch (error) {
-      this.handleDbException(error);
-    }
+    const codeStatus = await this.verificationcodeRepository.findOne({ where: { email } });
+    if (!codeStatus) throw new BadRequestException('CODIGO EXPIRADO');
+    if (!codeStatus.code || codeStatus.code !== code) throw new BadRequestException('CODIGO INVALIDO');
+    const user = await this.userRepository.findOne({ where: { email } });
+    user.verify = true;
+    await this.userRepository.save(user);
+    await this.verificationcodeRepository.delete(codeStatus.id);
+    return { ...user, token: this.getJwtToken({ email: user.email, id: user.id }) };
+
   }
   async resend(resendUserDto: ResendUserDto) {
     const { email } = resendUserDto;
+    const MAX_EMAIL_SEND_LIMIT = 3;
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) throw new BadRequestException('Usuario no encontrado');
     try {
-
-      const verificationCodeNumber = Math.floor(100000 + Math.random() * 900000);
-      const verificationCode = verificationCodeNumber.toString();
-      const codeEntity = this.verificationcodeRepository.create({
-        email: email,
-        code: verificationCode,
-      });
-      await this.verificationcodeRepository.save(codeEntity);
+      let userRecord = await this.verificationcodeRepository.findOne({ where: { email } });
+      if (userRecord) {
+        if (userRecord.emailSendCount >= MAX_EMAIL_SEND_LIMIT) {
+          return { message: 'Se ha alcanzado el límite de reenvío de correo electrónico, espere 10 minutos' };
+        }
+        userRecord.emailSendCount += 1;
+      } else {
+        userRecord = this.verificationcodeRepository.create({
+          email: email,
+          emailSendCount: 1
+        });
+      }
+      let verificationCodeNumber: number;
+      do {
+        verificationCodeNumber = Math.floor(100000 + Math.random() * 900000);
+      } while (verificationCodeNumber < 100000);
+      userRecord.code = verificationCodeNumber.toString();
+      await this.verificationcodeRepository.save(userRecord);
       let mailOptions = {
-        from: 'alpaquitay@company.com',
+        from: 'mindwell@company.com',
         to: email,
         subject: 'Código de Verificación',
-        text: `Tu código de verificación es: ${verificationCode}`
+        text: `Tu código de verificación es: ${userRecord.code}`
       };
       transporter.sendMail(mailOptions);
-      return { message: 'Email resend' };
+      return { message: 'Email reenviado' };
     } catch (error) {
       this.handleDbException(error);
     }
@@ -146,7 +164,7 @@ export class AuthService {
     const { email, password, ...resto } = updateUserDto
     try {
       const usuario = await this.findOne(id);
-      if (!usuario) throw new BadRequestException('User not found');
+      if (!usuario) throw new BadRequestException('Usuario no encontrado');
       const user = await this.userRepository.save({ ...usuario, ...resto });
       return user;
     } catch (error) {
@@ -157,32 +175,32 @@ export class AuthService {
     const { password } = updateUserDto
     try {
       const usuario = await this.findOne(id);
-      if (!usuario) throw new BadRequestException('User not found');
+      if (!usuario) throw new BadRequestException('Usuario no encontrado');
       usuario.password = bcrypt.hashSync(password, 10);
       await this.userRepository.save(usuario);
       delete usuario.password;
-      return usuario;
+      return { ...usuario, token: this.getJwtToken({ email: usuario.email, id: usuario.id }) };
     } catch (error) {
       this.handleDbException(error);
     }
   }
-  async UpdatePrivilegy(id: string) {
-    try {
-      const usuario = await this.findOne(id);
-      if (!usuario) throw new BadRequestException('User not found');
-      usuario.roles = ['user', 'psicologo'];
+  async UpdatePrivilegy(id: string, privilegyUserDto: PrivilegyUserDto) {
+    const { role } = privilegyUserDto;
+    const usuario = await this.findOne(id);
+    if (!usuario) throw new BadRequestException('Usuario no encontrado');
+    if (usuario.roles.includes(role)) throw new BadRequestException('Usuario ya tiene este privilegio');
+    if (role) {
+      usuario.roles.push(role);
       await this.userRepository.save(usuario);
-      delete usuario.password;
-      return usuario;
-    } catch (error) {
-      this.handleDbException(error);
     }
+    delete usuario.password;
+    return usuario;
   }
 
   async remove(id: string) {
     try {
       const usuario = await this.findOne(id);
-      if (!usuario) throw new BadRequestException('User not found');
+      if (!usuario) throw new BadRequestException('Usuario no encontrado');
       usuario.isActive = false;
       usuario.verify = false;
       await this.userRepository.save(usuario);
@@ -217,7 +235,6 @@ export class AuthService {
   }
   @Cron(CronExpression.EVERY_MINUTE)
   async deactivateExpiredVerificationCodes() {
-    this.logger.debug('Borrando códigos de verificación caducados...');
     const currentDate = new Date();
     const expiredDate = new Date(currentDate.getTime() - 5 * 60000); // 5 minutos atrás
 
@@ -228,7 +245,6 @@ export class AuthService {
       .where('expiration <= :expiredDate', { expiredDate })
       .execute();
 
-    this.logger.debug(`Se borraron ${deletedResult.affected} códigos de verificación expirados.`);
   }
   @Cron(CronExpression.EVERY_MINUTE)
   async deactivateUnverifiedUsers() {
@@ -241,6 +257,5 @@ export class AuthService {
       .andWhere('verify = :verify', { verify: false })
       .execute();
 
-    this.logger.debug(`Se desactivaron ${result.affected} usuarios no verificados.`);
   }
 }

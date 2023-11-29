@@ -8,6 +8,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { VerifyUserDto } from './dto/verify-user.dto';
 import { ResendUserDto } from './dto/resend-user.dto';
+import { PrivilegyUserDto } from './dto/privilegy-user.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -65,14 +66,13 @@ export class AuthController {
   }
 
   @Patch('/password/:id')
-  @Auth()
   updatePass(@Param('id', ParseUUIDPipe) id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.authService.updatePass(id, updateUserDto);
   }
   @Patch('/privilegy/:id')
   @Auth(ValidRoles.admin, ValidRoles.superUser)
-  UpdatePrivilegy(@Param('id', ParseUUIDPipe) id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.authService.UpdatePrivilegy(id);
+  UpdatePrivilegy(@Param('id', ParseUUIDPipe) id: string, @Body() privilegyUserDto: PrivilegyUserDto) {
+    return this.authService.UpdatePrivilegy(id,privilegyUserDto);
   }
   @Delete(':id')
   @Auth()
