@@ -22,7 +22,7 @@ export class User {
     roles: string[];
     @CreateDateColumn()
     createdAt: Date;
-
+    
 
     @BeforeInsert()
     @BeforeUpdate()

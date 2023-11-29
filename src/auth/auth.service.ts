@@ -56,7 +56,7 @@ export class AuthService {
   }
   async login(loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
-    const user = await this.userRepository.findOne({ where: { email }, select: { email: true, password: true, id: true } });
+    const user = await this.userRepository.findOne({ where: { email }, select: { email: true, password: true, id: true, name: true, lastname: true, roles: true, verify: true, isActive: true } });
     if (!user) throw new UnauthorizedException('Credentials not valid');
     if (!bcrypt.compareSync(password, user.password)) throw new UnauthorizedException('Credentials not valid');
     return { ...user, token: this.getJwtToken({ email: user.email, id: user.id }) };
@@ -71,6 +71,25 @@ export class AuthService {
 
     const { limit = 10, offset = 0 } = paginationDto;
     const users = await this.userRepository.find({ take: limit, skip: offset });
+    return users;
+
+  }
+  async findAllPsicologos(paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0 } = paginationDto;
+    const users = await this.userRepository.createQueryBuilder("user")
+      .where("user.roles @> :roles", { roles: ['psicologo'] })
+      .getMany();
+    return users;
+  }
+
+
+  async findAllPacientes(paginationDto: PaginationDto) {
+
+  const { limit = 10, offset = 0 } = paginationDto;
+    const users = await this.userRepository.createQueryBuilder("user")
+        .where("user.roles = :roles", { roles: ['user'] })
+        .getMany();
+
     return users;
 
   }
@@ -151,7 +170,7 @@ export class AuthService {
     try {
       const usuario = await this.findOne(id);
       if (!usuario) throw new BadRequestException('User not found');
-      usuario.roles = ['admin', 'user'];
+      usuario.roles = ['user', 'psicologo'];
       await this.userRepository.save(usuario);
       delete usuario.password;
       return usuario;

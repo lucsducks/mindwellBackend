@@ -32,6 +32,17 @@ export class AuthController {
   findAll(@Query() paginationDto: PaginationDto) {
     return this.authService.findAll(paginationDto);
   }
+  @Get('/users/psicologos')
+  @Auth(ValidRoles.psicologo, ValidRoles.admin)
+  findAllPsicologos(@Query() paginationDto: PaginationDto) {
+    return this.authService.findAllPsicologos(paginationDto);
+  }
+  @Get('/users/pacientes')
+  @Auth(ValidRoles.psicologo, ValidRoles.admin)
+  findAllPacientes(@Query() paginationDto: PaginationDto) {
+    return this.authService.findAllPacientes(paginationDto);
+  }
+
 
   @Get('/users/:term')
   @Auth()

@@ -7,6 +7,7 @@ import { FilesModule } from './files/files.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ScheduleModule } from '@nestjs/schedule';
+import { PacientesModule } from './pacientes/pacientes.module';
 
 @Module({
   imports: [ConfigModule.forRoot(), ServeStaticModule.forRoot({
@@ -20,6 +21,6 @@ import { ScheduleModule } from '@nestjs/schedule';
     password: process.env.DB_PASSWORD,
     autoLoadEntities: true,
     synchronize: true,
-  }), CommonModule, AuthModule, FilesModule,ScheduleModule.forRoot(),],
+  }), CommonModule, AuthModule, FilesModule,ScheduleModule.forRoot(), PacientesModule,],
 })
 export class AppModule { }
