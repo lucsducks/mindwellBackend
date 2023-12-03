@@ -1,3 +1,5 @@
+import { HistorialRespuesta } from "src/historialrespuestas/entities/historialrespuesta.entity";
+import { TestPsicologico } from "src/testpsicologicos/entities/testpsicologico.entity";
 import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: 'users' })
@@ -22,8 +24,10 @@ export class User {
     roles: string[];
     @CreateDateColumn()
     createdAt: Date;
-    
-
+    @OneToMany(() => TestPsicologico, testPsicologico => testPsicologico.user)
+    testPsicologico: TestPsicologico[];
+    @OneToMany(() => HistorialRespuesta, testPsicologico => testPsicologico.user)
+    historialRespuestas: HistorialRespuesta[];
     @BeforeInsert()
     @BeforeUpdate()
     checkfielemail() {

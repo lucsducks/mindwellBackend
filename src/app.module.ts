@@ -8,6 +8,10 @@ import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PacientesModule } from './pacientes/pacientes.module';
+import { TestpsicologicosModule } from './testpsicologicos/testpsicologicos.module';
+import { PreguntasModule } from './preguntas/preguntas.module';
+import { RespuestasModule } from './respuestas/respuestas.module';
+import { HistorialrespuestasModule } from './historialrespuestas/historialrespuestas.module';
 
 @Module({
   imports: [ConfigModule.forRoot(), ServeStaticModule.forRoot({
@@ -21,6 +25,6 @@ import { PacientesModule } from './pacientes/pacientes.module';
     password: process.env.DB_PASSWORD,
     autoLoadEntities: true,
     synchronize: true,
-  }), CommonModule, AuthModule, FilesModule,ScheduleModule.forRoot(), PacientesModule,],
+  }), CommonModule, AuthModule, FilesModule,ScheduleModule.forRoot(), PacientesModule, TestpsicologicosModule, PreguntasModule, RespuestasModule, HistorialrespuestasModule,],
 })
 export class AppModule { }

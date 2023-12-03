@@ -60,7 +60,7 @@ export class AuthService {
   }
   async login(loginUserDto: LoginUserDto) {
     const { email, password } = loginUserDto;
-    const user = await this.userRepository.findOne({ where: { email }, select: { email: true, password: true, id: true, name: true, lastname: true, roles: true, verify: true, isActive: true } });
+    const user = await this.userRepository.findOne({ where: { email }, select: { email: true, password: true, id: true, name: true, lastname: true, roles: true,levelEducation:true, verify: true, isActive: true } });
     if (!user) throw new BadRequestException('Email no registrado');
     if (!user.isActive) throw new BadRequestException('Usuario desactivado, hablar con su docente o administrador');
     if (!bcrypt.compareSync(password, user.password)) throw new UnauthorizedException('Credenciales no validos');
