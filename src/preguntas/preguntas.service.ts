@@ -22,52 +22,56 @@ export class PreguntasService {
     const errores = [];
 
     for (const dto of createPreguntasDto) {
-        const existingPregunta = await this.preguntaRepository.createQueryBuilder('pregunta')
-            .andWhere('pregunta.pregunta = :pregunta', { pregunta: dto.pregunta })
-            .andWhere('pregunta.divisiondePregunta = :divisiondePregunta', { divisiondePregunta: dto.divisiondePregunta })
-            .andWhere('pregunta.testPsicologico = :testPsicologico', { testPsicologico: dto.testPsicologico })
-            .andWhere('pregunta.tipoRespuesta = :tipoRespuesta', { tipoRespuesta: dto.tipoRespuesta })
-            .andWhere('pregunta.respuestasposibles = :respuestasposibles', { respuestasposibles: dto.respuestasposibles })
-            .getOne();
+      const existingPregunta = await this.preguntaRepository.createQueryBuilder('pregunta')
+        .andWhere('pregunta.pregunta = :pregunta', { pregunta: dto.pregunta })
+        .andWhere('pregunta.divisiondePregunta = :divisiondePregunta', { divisiondePregunta: dto.divisiondePregunta })
+        .andWhere('pregunta.testPsicologico = :testPsicologico', { testPsicologico: dto.testPsicologico })
+        .andWhere('pregunta.tipoRespuesta = :tipoRespuesta', { tipoRespuesta: dto.tipoRespuesta })
+        .andWhere('pregunta.respuestasposibles = :respuestasposibles', { respuestasposibles: dto.respuestasposibles })
+        .getOne();
 
-        if (existingPregunta) {
-            errores.push(`Pregunta con contenido "${dto.pregunta}" ya existe.`);
-            continue;
-        }
+      if (existingPregunta) {
+        errores.push(`Pregunta con contenido "${dto.pregunta}" ya existe.`);
+        continue;
+      }
 
-        const testPsicologico = await this.testPsicologicoRepository.findOneBy({ id: dto.testPsicologico });
-        if (!testPsicologico) {
-            errores.push(`Test psicológico con ID ${dto.testPsicologico} no existe para la pregunta "${dto.pregunta}".`);
-            continue;
-        }
+      const testPsicologico = await this.testPsicologicoRepository.findOneBy({ id: dto.testPsicologico });
+      if (!testPsicologico) {
+        errores.push(`Test psicológico con ID ${dto.testPsicologico} no existe para la pregunta "${dto.pregunta}".`);
+        continue;
+      }
 
-        const pregunta = new Pregunta();
-        pregunta.pregunta = dto.pregunta;
-        pregunta.tipoRespuesta = dto.tipoRespuesta;
-        pregunta.testPsicologico = testPsicologico;
-        pregunta.divisiondePregunta = dto.divisiondePregunta;
-        pregunta.respuestasposibles = dto.respuestasposibles;
+      const pregunta = new Pregunta();
+      pregunta.pregunta = dto.pregunta;
+      pregunta.tipoRespuesta = dto.tipoRespuesta;
+      pregunta.testPsicologico = testPsicologico;
+      pregunta.divisiondePregunta = dto.divisiondePregunta;
+      pregunta.respuestasposibles = dto.respuestasposibles;
 
-        preguntasParaGuardar.push(pregunta);
+      preguntasParaGuardar.push(pregunta);
     }
 
     if (preguntasParaGuardar.length > 0) {
-        await this.preguntaRepository.save(preguntasParaGuardar);
+      await this.preguntaRepository.save(preguntasParaGuardar);
     }
 
-    return { preguntasGuardadas: preguntasParaGuardar.length, errores };
-}
+    if(errores.length > 0) {
+      throw new BadRequestException('"Ya existe la pregunta con el mismo contenido"');
+    }
+
+    return { preguntasGuardadas: preguntasParaGuardar.length, errores: [] };
+  }
 
 
   async findAll() {
     return await this.preguntaRepository.find({
-      relations: ['testPsicologico', 'respuestas'],
+      relations: ['testPsicologico'],
     });
   }
   async findAllTest(id: string) {
     return await this.preguntaRepository.find({
-      where:{testPsicologico: {id: id}},
-      relations: ['testPsicologico', 'respuestas'],
+      where: { testPsicologico: { id: id } },
+      relations: ['testPsicologico'],
     });
   }
 
@@ -78,7 +82,7 @@ export class PreguntasService {
       // Búsqueda por ID
       pregunta = await this.preguntaRepository.findOne({
         where: { id: term },
-        relations: ['testPsicologico', 'respuestas'],
+        relations: ['testPsicologico'],
       });
     } else {
       // Búsqueda por texto de la pregunta
