@@ -1,5 +1,6 @@
 import { User } from 'src/auth/entities/user.entity';
-import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Column, CreateDateColumn } from 'typeorm';
+import { TestPsicologico } from 'src/testpsicologicos/entities/testpsicologico.entity';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Column, CreateDateColumn, ManyToMany, JoinTable } from 'typeorm';
 
 @Entity({ name: 'pacientes' })
 export class Paciente {
@@ -12,15 +13,21 @@ export class Paciente {
 
     @Column({ type: 'uuid' })
     psicologoId: string;
+    @ManyToMany(() => TestPsicologico)
+    @JoinTable()
+    testDisponibles: TestPsicologico[];
 
+    @ManyToMany(() => TestPsicologico)
+    @JoinTable()
+    testTotales: TestPsicologico[];
     @ManyToOne(() => User, { cascade: true })
-    @JoinColumn({ name: 'pacienteId'})
+    @JoinColumn({ name: 'pacienteId' })
     paciente: User;
 
     @Column({ type: 'uuid' })
     pacienteId: string;
     @Column({ type: 'boolean', default: true })
-    isActive:   boolean;
+    isActive: boolean;
     @CreateDateColumn()
     createdAt: Date;
 }
