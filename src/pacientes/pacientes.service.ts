@@ -71,7 +71,7 @@ export class PacientesService {
     });
   }
 
-
+ 
   async findOne(id: string) {
     const paciente = await this.pacienteRepository.find({
       where: { pacienteId: id },
