@@ -97925,7 +97925,7 @@ f.toString
 s=A.aD(a,!0,t.Ed).b
 r=A.y(t.N,t.lo)
 for(q=s.length,p=0;p<s.length;s.length===q||(0,A.G)(s),++p){o=s[p]
-n=o.f.r.a
+n=o.f.r.a+"-"+o.c
 if(!r.an(0,n))r.p(0,n,o)}q=r.gaW(r)
 m=A.a2(q,!0,A.l(q).h("m.E"))
 if(i.f.length===0)l=m
@@ -98193,21 +98193,22 @@ m(){this.aC()},
 ap1(){var s,r,q,p,o,n,m,l=this,k=l.c
 k.toString
 s=A.aD(k,!1,t.Ed).a
-for(k=s.length,r=l.x,q=0;q<s.length;s.length===k||(0,A.G)(s),++q){p=s[q]
-o=p.f.d
-n=p.b
-if(n==="si"){m=r.i(0,o)
-r.p(0,o,(m==null?0:m)+1)}}l.ZZ()
+for(k=s.length,r=0;r<s.length;s.length===k||(0,A.G)(s),++r){q=s[r]
+p=q.f.d
+o=q.b
+if(o==="si"){n=l.x
+m=n.i(0,p)
+n.p(0,p,(m==null?0:m)+1)}}l.ZZ()
 l.auZ()},
-ZZ(){var s,r,q=this.x,p=q.i(0,"Extroversi\xf3n \u2013 Introversi\xf3n")
-p.toString
-s=p>4
-p=q.i(0,"Estabilidad \u2013 Inestabilidad")
-p.toString
-r=p<=4
-q=q.i(0,"Escala De Mentiras")
+ZZ(){var s,r,q=this.x.i(0,"Extroversi\xf3n \u2013 Introversi\xf3n")
 q.toString
-if(q>4)return"Resultados no confiables debido a la alta puntuaci\xf3n en la Escala de Mentiras"
+s=q>4
+q=this.x.i(0,"Estabilidad \u2013 Inestabilidad")
+q.toString
+r=q<=4
+q=this.x.i(0,"Escala De Mentiras")
+q.toString
+if(q>5)return"Resultados no confiables debido a la alta puntuaci\xf3n en la Escala de Mentiras"
 if(s&&r)return"Sangu\xedneo (Extrovertido - Estable)"
 else if(s&&!r)return"Col\xe9rico (Extrovertido - Inestable)"
 else if(!s&&r)return"Flem\xe1tico (Introvertido - Estable)"
@@ -98216,6 +98217,7 @@ auZ(){var s=this
 s.w="Resultados:\n"
 s.w="Resultados:\n"+("Tipo de personalidad: "+s.ZZ()+"\n")
 s.x.ab(0,new A.aBQ(s))
+s.x=A.aw(["Extroversi\xf3n \u2013 Introversi\xf3n",0,"Estabilidad \u2013 Inestabilidad",0,"Escala De Mentiras",0],t.N,t.S)
 s.R(new A.aBR())},
 F(a){var s=null,r=A.aD(a,!0,t.Ed).a,q=t.p
 return A.q5(A.cf(A.iU(B.cl,A.a([A.bt(A.a([A.mM(B.cx,B.M0,new A.aBN(this),"Calcular Resultados"),A.a5(this.w,s,s,s,s,s,s,s),A.cf(A.aKW(new A.aBO(this,r),r.length),1),A.aN(s,A.mM(B.cx,B.Mk,new A.aBP(),"Salir"),B.i,s,s,s,s,s,new A.ac(0,10,0,10),s,s,s,s)],q),B.q,B.B,B.l)],q),B.Q,B.bf,s),1))}}
