@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePreguntaDto } from './dto/create-pregunta.dto';
 import { UpdatePreguntaDto } from './dto/update-pregunta.dto';
 import { Pregunta } from './entities/pregunta.entity';
@@ -10,24 +14,32 @@ import { isUUID } from 'class-validator';
 
 @Injectable()
 export class PreguntasService {
-
   constructor(
     @InjectRepository(Pregunta)
     private readonly preguntaRepository: Repository<Pregunta>,
     @InjectRepository(TestPsicologico)
-    private readonly testPsicologicoRepository: Repository<TestPsicologico>
-  ) { }
+    private readonly testPsicologicoRepository: Repository<TestPsicologico>,
+  ) {}
   async create(createPreguntasDto: CreatePreguntaDto[], user: User) {
     const preguntasParaGuardar = [];
     const errores = [];
 
     for (const dto of createPreguntasDto) {
-      const existingPregunta = await this.preguntaRepository.createQueryBuilder('pregunta')
+      const existingPregunta = await this.preguntaRepository
+        .createQueryBuilder('pregunta')
         .andWhere('pregunta.pregunta = :pregunta', { pregunta: dto.pregunta })
-        .andWhere('pregunta.divisiondePregunta = :divisiondePregunta', { divisiondePregunta: dto.divisiondePregunta })
-        .andWhere('pregunta.testPsicologico = :testPsicologico', { testPsicologico: dto.testPsicologico })
-        .andWhere('pregunta.tipoRespuesta = :tipoRespuesta', { tipoRespuesta: dto.tipoRespuesta })
-        .andWhere('pregunta.respuestasposibles = :respuestasposibles', { respuestasposibles: dto.respuestasposibles })
+        .andWhere('pregunta.divisiondePregunta = :divisiondePregunta', {
+          divisiondePregunta: dto.divisiondePregunta,
+        })
+        .andWhere('pregunta.testPsicologico = :testPsicologico', {
+          testPsicologico: dto.testPsicologico,
+        })
+        .andWhere('pregunta.tipoRespuesta = :tipoRespuesta', {
+          tipoRespuesta: dto.tipoRespuesta,
+        })
+        .andWhere('pregunta.respuestasposibles = :respuestasposibles', {
+          respuestasposibles: dto.respuestasposibles,
+        })
         .getOne();
 
       if (existingPregunta) {
@@ -35,11 +47,23 @@ export class PreguntasService {
         continue;
       }
 
-      const testPsicologico = await this.testPsicologicoRepository.findOneBy({ id: dto.testPsicologico });
+      const testPsicologico = await this.testPsicologicoRepository.findOneBy({
+        id: dto.testPsicologico,
+      });
       if (!testPsicologico) {
-        errores.push(`Test psicológico con ID ${dto.testPsicologico} no existe para la pregunta "${dto.pregunta}".`);
+        errores.push(
+          `Test psicológico con ID ${dto.testPsicologico} no existe para la pregunta "${dto.pregunta}".`,
+        );
         continue;
       }
+      const ultimaPregunta = await this.preguntaRepository
+        .createQueryBuilder('pregunta')
+        .where('pregunta.testPsicologico = :testPsicologico', {
+          testPsicologico: dto.testPsicologico,
+        })
+        .orderBy('pregunta.orden', 'DESC')
+        .getOne();
+      const ordenUltimaPregunta = ultimaPregunta ? ultimaPregunta.orden : 0;
 
       const pregunta = new Pregunta();
       pregunta.pregunta = dto.pregunta;
@@ -47,6 +71,7 @@ export class PreguntasService {
       pregunta.testPsicologico = testPsicologico;
       pregunta.divisiondePregunta = dto.divisiondePregunta;
       pregunta.respuestasposibles = dto.respuestasposibles;
+      pregunta.orden = ordenUltimaPregunta + 1; 
 
       preguntasParaGuardar.push(pregunta);
     }
@@ -55,13 +80,14 @@ export class PreguntasService {
       await this.preguntaRepository.save(preguntasParaGuardar);
     }
 
-    if(errores.length > 0) {
-      throw new BadRequestException('"Ya existe la pregunta con el mismo contenido"');
+    if (errores.length > 0) {
+      throw new BadRequestException(
+        '"Ya existe la pregunta con el mismo contenido"',
+      );
     }
 
     return { preguntasGuardadas: preguntasParaGuardar.length, errores: [] };
   }
-
 
   async findAll() {
     return await this.preguntaRepository.find({
@@ -99,19 +125,30 @@ export class PreguntasService {
     return pregunta;
   }
 
-
   async update(id: string, updatePreguntaDto: UpdatePreguntaDto, user: User) {
-    const existingPregunta = await this.preguntaRepository.createQueryBuilder('pregunta')
-      .andWhere('pregunta.pregunta = :pregunta', { pregunta: updatePreguntaDto.pregunta })
-      .andWhere('pregunta.divisiondePregunta = :divisiondePregunta', { divisiondePregunta: updatePreguntaDto.divisiondePregunta })
-      .andWhere('pregunta.testPsicologico = :testPsicologico', { testPsicologico: updatePreguntaDto.testPsicologico })
-      .andWhere('pregunta.tipoRespuesta = :tipoRespuesta', { tipoRespuesta: updatePreguntaDto.tipoRespuesta })
-      .andWhere('pregunta.respuestasposibles = :respuestasposibles', { respuestasposibles: updatePreguntaDto.respuestasposibles })
+    const existingPregunta = await this.preguntaRepository
+      .createQueryBuilder('pregunta')
+      .andWhere('pregunta.pregunta = :pregunta', {
+        pregunta: updatePreguntaDto.pregunta,
+      })
+      .andWhere('pregunta.divisiondePregunta = :divisiondePregunta', {
+        divisiondePregunta: updatePreguntaDto.divisiondePregunta,
+      })
+      .andWhere('pregunta.testPsicologico = :testPsicologico', {
+        testPsicologico: updatePreguntaDto.testPsicologico,
+      })
+      .andWhere('pregunta.tipoRespuesta = :tipoRespuesta', {
+        tipoRespuesta: updatePreguntaDto.tipoRespuesta,
+      })
+      .andWhere('pregunta.respuestasposibles = :respuestasposibles', {
+        respuestasposibles: updatePreguntaDto.respuestasposibles,
+      })
       .getOne();
 
-
     if (existingPregunta) {
-      throw new BadRequestException('Ya existe una pregunta con el mismo contenido.');
+      throw new BadRequestException(
+        'Ya existe una pregunta con el mismo contenido.',
+      );
     }
 
     // Encontrar y actualizar la pregunta
@@ -147,8 +184,7 @@ export class PreguntasService {
     if (existeTest.isActive) {
       await this.preguntaRepository.update(id, { isActive: false });
       return { message: 'Test desactivado' };
-    }
-    else {
+    } else {
       await this.preguntaRepository.update(id, { isActive: true });
       return { message: 'Test activado' };
     }
