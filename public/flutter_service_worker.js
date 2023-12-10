@@ -33,7 +33,7 @@ const RESOURCES = {"assets/AssetManifest.bin": "063f71ffb19fba5d8a0e17bbb5ef72ee
 "assets/assets/images/verde.jpg": "576209a2b58a41f2c7b2c29f68088cbd",
 "assets/assets/images/windows.png": "a025efd8f5de7ed38d2cc2741c271f4f",
 "assets/FontManifest.json": "5a32d4310a6f5d9a6b651e75ba0d7372",
-"assets/fonts/MaterialIcons-Regular.otf": "34ef40b4efa2715ed5a8b48d4456f7d4",
+"assets/fonts/MaterialIcons-Regular.otf": "663a182beb3bf53349354ad24105f288",
 "assets/NOTICES": "92ceb04eb21b359a343e167e4bc283aa",
 "assets/packages/awesome_snackbar_content/assets/back.svg": "ba1c3aebba280f23f5509bd42dab958d",
 "assets/packages/awesome_snackbar_content/assets/bubbles.svg": "1df6817bf509ee4e615fe821bc6dabd9",
@@ -60,10 +60,10 @@ const RESOURCES = {"assets/AssetManifest.bin": "063f71ffb19fba5d8a0e17bbb5ef72ee
 "icons/Icon-maskable-192.png": "b925c1e0a63d646c077021c353a690f7",
 "icons/Icon-maskable-512.png": "7c1ba011a506afa30ddb934e0959baf9",
 "icons/logg.png": "6975b8765fcdd1306779d3d4ba2a5b6a",
-"index.html": "c50ce976e4c2dc9c780da4b8647bc84d",
-"/": "c50ce976e4c2dc9c780da4b8647bc84d",
+"index.html": "f40bbfa42784070e6d65df44a0872e14",
+"/": "f40bbfa42784070e6d65df44a0872e14",
 "logg.png": "6975b8765fcdd1306779d3d4ba2a5b6a",
-"main.dart.js": "06069a42af22e064c60181f204712358",
+"main.dart.js": "b07140719cd51c44c30af2f14c3b6f2d",
 "manifest.json": "df1bf24f0bd7fd634b19f250cdfe9f83",
 "version.json": "d6ce06b344fa64015340ed58a478758a"};
 // The application shell files that are downloaded before a service worker can
